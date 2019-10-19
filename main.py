@@ -14,10 +14,18 @@ class MinKlass:
             return 235.21/liter
     def kmph_to_mps(self, kmph):
         return kmph*3.6
+
 form = """
 <form method="POST">
 <input type="number" min="1" name="add1"></input>
 <input type="number" min="1" name="add2"></input>
+<input type="submit"></input>
+</form>
+"""
+
+form_template = """
+<form method="POST">
+{}
 <input type="submit"></input>
 </form>
 """
@@ -48,24 +56,43 @@ def kmph():
     kmph = request.form.get("add1")
     
     if request.method == "GET":
-        return form 
+        return form_template.format(FormBuilder([Input(Type("text"),Name("add1"))]).renderForm())
+        #funkar det? Funkar primaaaaa. det här går som på räls. Jag tror jag kör en commit and run, Dags o sova typ :)
     return str(MinKlass(0,0).kmph_to_mps(1 if kmph == None else float(kmph)))
 
 #Nä men nu tycker jag vi bygger en form-builder... :)
 @app.route('/formtest', methods=["GET", "POST"])
 def formtest():
-    return FormBuilder(["add1|text","add2|number"]).renderForm()
+    return FormBuilder([Input(Type("text"),Name("add1")),Input(Type("text"),Name("add2"))]).renderForm()
 
+#Funka prima ;) Perfekt!
 class FormBuilder:
     def __init__(self, inputs):
         self.form = ""
         for input in inputs:
-            name = input.split("|")[0]
-            type = input.split("|")[1]
+            name = input.name.get_value()
+            type = input.type.get_value()
             self.form += f"""
             <input type="{type}" name="{name}" />
             """
     def renderForm(self):
         return self.form
 
-cla
+class Input:
+    def __init__(self, type, name): #hmm, tror det blir bättre om de har egna namn
+        self.type = type
+        self.name = name
+
+class Type:
+    def __init__(self, value):
+        self.value = value
+
+    def get_value(self):
+        return self.value
+
+class Name:
+    def __init__(self, value):
+        self.value = value
+
+    def get_value(self):
+        return self.value
